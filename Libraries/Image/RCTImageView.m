@@ -218,6 +218,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
 
     if (RCTShouldReloadImageForSizeChange(imageSize, idealSize)) {
       if (RCTShouldReloadImageForSizeChange(_targetSize, idealSize)) {
+        RCTLogInfo(@"[PERF IMAGEVIEW] Reloading image %@ as size %@", _src, NSStringFromCGSize(idealSize));
+
         // If the existing image or an image being loaded are not the right size, reload the asset in case there is a
         // better size available.
         _targetSize = idealSize;
@@ -236,8 +238,22 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
   [super didMoveToWindow];
 
   if (!self.window) {
-    [self clearImage];
-  } else if (self.src) {
+    // Don't keep self alive through the asynchronous dispatch, if the intention was to remove the view so it would
+    // deallocate.
+    __weak typeof(self) weakSelf = self;
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+      __strong typeof(self) strongSelf = weakSelf;
+      if (!strongSelf) {
+        return;
+      }
+
+      // If we haven't been re-added to a window by this run loop iteration, clear out the image to save memory.
+      if (!strongSelf.window) {
+        [strongSelf clearImage];
+      }
+    });
+  } else if (!self.image && self.src) {
     [self reloadImage];
   }
 }
