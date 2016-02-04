@@ -4,7 +4,7 @@ title: Performance
 layout: docs
 category: Guides
 permalink: docs/performance.html
-next: native-modules-ios
+next: upgrading
 ---
 
 A compelling reason for using React Native instead of WebView-based
@@ -205,7 +205,7 @@ should continue to render rows.
 "When true, offscreen child views (whose `overflow` value is `hidden`)
 are removed from their native backing superview when offscreen.  This
 can improve scrolling performance on long lists. The default value is
-false."
+`true`."(The default value is `false` before version 0.14-rc).
 
 This is an extremely important optimization to apply on large ListViews.
 On Android the `overflow` value is always `hidden` so you don't need to
